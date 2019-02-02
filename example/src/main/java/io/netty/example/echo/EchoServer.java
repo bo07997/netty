@@ -50,15 +50,21 @@ public final class EchoServer {
         }
 
         // Configure the server.
+        //线程组，默认2*CPU，《- 1.线程执行器 2. for循环创建NioEventLoop对象数组 3.线程选择器
         EventLoopGroup bossGroup = new MultithreadEventLoopGroup(1, NioHandler.newFactory());
         EventLoopGroup workerGroup = new MultithreadEventLoopGroup(NioHandler.newFactory());
         final EchoServerHandler serverHandler = new EchoServerHandler();
         try {
+            //ServerBootstrap中定义了服务端React的"从线程池"对应的相关配置，都是以child开头的属性。 而用于"主线程池"channel的属性都定义在AbstractBootstrap中；
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
+                    //Channel 实例化
              .channel(NioServerSocketChannel.class)
+                    //设置通道的选项参数， 对于服务端而言就是ServerSocketChannel， 客户端而言就是SocketChannel
              .option(ChannelOption.SO_BACKLOG, 100)
+                    //对于服务端而言就是ServerSocketChannel，也就是用来处理Acceptor的操作
              .handler(new LoggingHandler(LogLevel.INFO))
+                    //对于客户端的SocketChannel，主要是用来处理业务操作
              .childHandler(new ChannelInitializer<SocketChannel>() {
                  @Override
                  public void initChannel(SocketChannel ch) throws Exception {
